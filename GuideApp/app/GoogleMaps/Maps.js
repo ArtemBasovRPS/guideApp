@@ -3,10 +3,12 @@ import {
   StyleSheet,
   Text,
   View,
-  Linking
+  Linking,
+  TouchableOpacity
 } from 'react-native';
 
 import MapView, {PROVIDER_GOOGLE, Marker, Polyline} from 'react-native-maps';
+import Ionicon from 'react-native-vector-icons/Ionicons';
 
 const APIKEY = 'AIzaSyB9kkiGSu4UfmDXDYKdID1JapWMI8szbHw';
 
@@ -130,36 +132,61 @@ export default class Maps extends Component {
 
   render() {
     return (
-      <MapView 
-        provider={PROVIDER_GOOGLE}
-        ref={(ref) => { this.map = ref }}
-        style={styles.map}
-        initialRegion={{
-          latitude: 53.90428042342294,
-          longitude: 27.56048619747162,
-          latitudeDelta: 0.06360365089180675,
-          longitudeDelta: 0.06713971495628357,
-        }}
-        onPress={this.handlePress.bind(this)}
-        onRegionChangeComplete={this.onRegionChangeComplete}
-      >
-        {this.state.polylinePoints.length > 0
-          ?
-            <Polyline
-              coordinates={this.state.polylinePoints}
-              strokeColor="#000"
-              fillColor="rgba(255,0,0,0.5)"
-              strokeWidth={5}/>
-          : 
-            null
-        }
-        {/*this.state.points*/}
-      </MapView>
+      <View style={styles.container}>
+        <MapView 
+          provider={PROVIDER_GOOGLE}
+          ref={(ref) => { this.map = ref }}
+          style={styles.map}
+          initialRegion={{
+            latitude: 53.90428042342294,
+            longitude: 27.56048619747162,
+            latitudeDelta: 0.06360365089180675,
+            longitudeDelta: 0.06713971495628357,
+          }}
+          onPress={this.handlePress.bind(this)}
+          onRegionChangeComplete={this.onRegionChangeComplete}
+        >
+          {this.state.polylinePoints.length > 0
+            ?
+              <Polyline
+                coordinates={this.state.polylinePoints}
+                strokeColor="#000"
+                fillColor="rgba(255,0,0,0.5)"
+                strokeWidth={5}/>
+            : 
+              null
+          }
+          {/*this.state.points*/}
+        </MapView>
+        <TouchableOpacity
+        style={styles.menu}
+          activeOpacity={.8}
+          onPress={() => {}}>
+            <Ionicon name="md-menu" style={styles.iconMenu}/>
+        </TouchableOpacity>
+      </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: 64,
+  },
+  menu: {
+    width: 40, 
+    height: 40, 
+    marginTop: 15, 
+    marginLeft: 20, 
+    justifyContent: 'center', 
+    alignItems: 'center'
+  },
+  iconMenu: {
+    backgroundColor: 'transparent',
+    fontSize: 40,
+    color: "#4F8EF7",
+  },
   map: {
     ...StyleSheet.absoluteFillObject,
   },
