@@ -13,23 +13,19 @@ import Ionicon from 'react-native-vector-icons/Ionicons';
 const APIKEY = 'AIzaSyB9kkiGSu4UfmDXDYKdID1JapWMI8szbHw';
 
 export default class Maps extends Component {
-  markersPoints = [];
-
-
   constructor(props) {
     super(props);
     this.state = {
       points: null,
       markers: [],
-      polylinePoints: []
+      polylinePoints: [],
+      markers: [],
     }
     this.map = null;
   }
 
   componentDidMount() {
     //TODO
-
-    //this.setState({points: this.initPoints()})
   }
 
   getRandomInt(min, max) {
@@ -37,18 +33,6 @@ export default class Maps extends Component {
     rand = Math.round(rand);
 
     return rand;
-  }
-
-  initPoints() {
-    return this.markersPoints.map((marker, index) => {
-        return (
-          <Marker key={index} coordinate={marker} draggable>
-            <View style={styles.marker}>
-            {/*<Text style={styles.text}>{marker.cost}</Text>*/}
-            </View>
-          </Marker>
-        )
-    })
   }
 
   decode = (t,e) => {
@@ -60,19 +44,25 @@ export default class Maps extends Component {
   }
 //transforms something like this geocFltrhVvDsEtA}ApSsVrDaEvAcBSYOS_@... to an array of coordinates
 
-  addPointPolyline = (latitude, longitude) => {
+  addPolylinePoint = (latitude, longitude) => {
     this.setState({
       polylinePoints: [
         ...this.state.polylinePoints,
         {
-          latitude: latitude,
-          longitude: longitude
+          latitude,
+          longitude
         }
       ]
     })
   }
 
-  addPointsPolyline({latitude, longitude}) {
+  // 'https://maps.googleapis.com/maps/api/directions/json?
+  // origin=' + startPosition 
+  // + '&destination=' + endPosition 
+  // + '&departure_time='+Date.now() //////???????????
+  // +'&traffic_model=best_guess&key=' ////////?????????
+  // + Util.GOOGLE_API_KEY;
+  addPolylinePoints = ({latitude, longitude}) => {
     //const mode = 'driving'; // 'walking';
     let length = this.state.polylinePoints.length;
     let points = this.state.polylinePoints;
@@ -95,18 +85,31 @@ export default class Maps extends Component {
               ]
             })
         } else {
-          this.addPointPolyline(latitude, longitude);
+          this.addPolylinePoint(latitude, longitude);
         }
       })
       .catch(e => {console.warn(e)})
 
     } else {
-        this.addPointPolyline(latitude, longitude);
+        this.addPolylinePoint(latitude, longitude);
     }
   }
 
+  addMarkerPoint = ({latitude, longitude}) => {
+    this.setState({
+      markers: [
+        ...this.state.markers,
+        {
+          latitude,
+          longitude
+        }
+      ]
+    })
+  }
+
   handlePress(e) {
-    this.addPointsPolyline(e.nativeEvent.coordinate)
+    this.addMarkerPoint(e.nativeEvent.coordinate)
+    this.addPolylinePoints(e.nativeEvent.coordinate)
   }
 
 
@@ -114,21 +117,6 @@ export default class Maps extends Component {
   onRegionChangeComplete(region) {
     console.log(region)
   }
-
-  // drawPolyline() {
-  //   console.log('draw')
-  //   console.log(this.state.polylinePoints)
-  //   return (this.state.polylinePoints.length > 0
-  //     ?
-  //       <Polyline
-  //         coordinates={this.state.polylinePoints}
-  //         strokeColor="#000"
-  //         fillColor="rgba(255,0,0,0.5)"
-  //         strokeWidth={5}/>
-  //     : 
-  //       null
-  //   )
-  // }
 
   render() {
     return (
@@ -156,14 +144,18 @@ export default class Maps extends Component {
             : 
               null
           }
-          {/*this.state.points*/}
+          {this.state.markers.length > 0
+            ?
+              this.state.markers.map((marker, index) => {
+                return (
+                  <Marker key={index} coordinate={marker} draggable>
+                  </Marker>
+                )
+              })
+            :
+              null
+          }
         </MapView>
-        <TouchableOpacity
-        style={styles.menu}
-          activeOpacity={.8}
-          onPress={() => {}}>
-            <Ionicon name="md-menu" style={styles.iconMenu}/>
-        </TouchableOpacity>
       </View>
     );
   }
@@ -174,26 +166,13 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 64,
   },
-  menu: {
-    width: 40, 
-    height: 40, 
-    marginTop: 15, 
-    marginLeft: 20, 
-    justifyContent: 'center', 
-    alignItems: 'center'
-  },
-  iconMenu: {
-    backgroundColor: 'transparent',
-    fontSize: 40,
-    color: "#4F8EF7",
-  },
   map: {
     ...StyleSheet.absoluteFillObject,
   },
   marker: {
     backgroundColor: '#550bbc',
-    width: 10,
-    height: 10,
+    width: 20,
+    height: 20,
     borderRadius: 10,
   },
   text: {
