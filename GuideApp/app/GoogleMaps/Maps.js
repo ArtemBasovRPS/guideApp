@@ -13,6 +13,8 @@ import Ionicon from 'react-native-vector-icons/Ionicons';
 const APIKEY = 'AIzaSyB9kkiGSu4UfmDXDYKdID1JapWMI8szbHw';
 
 export default class Maps extends Component {
+  segments = [];
+
   constructor(props) {
     super(props);
     this.state = {
@@ -42,7 +44,26 @@ export default class Maps extends Component {
 
     return d=d.map(function(t){ return {latitude:t[0],longitude:t[1]} })
   }
-//transforms something like this geocFltrhVvDsEtA}ApSsVrDaEvAcBSYOS_@... to an array of coordinates
+
+  getWayPoints = (startPoint, endPoint) => {
+    let 
+        origin = `${startPoint.latitude},${startPoint.longitude}`, 
+        destination = `${endPoint.latitude},${endPoint.longitude}`, 
+        url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${APIKEY}&mode=driving`;
+
+    return new Promise((resolve, reject) => {
+      fetch(url)
+      .then(response => response.json())
+      .then(json => {
+        if (json.status === "OK") {
+            resolve(this.decode(json.routes[0].overview_polyline.points));
+        } else {
+          resolve(endPoint);
+        }
+      })
+      .catch(e => {console.warn(e)})
+    });  
+  }
 
   addPolylinePoint = (latitude, longitude) => {
     this.setState({
@@ -56,6 +77,10 @@ export default class Maps extends Component {
     })
   }
 
+  addSegment = (segment) => {
+    this.segments.push(segment)
+  }
+
   // 'https://maps.googleapis.com/maps/api/directions/json?
   // origin=' + startPosition 
   // + '&destination=' + endPosition 
@@ -64,34 +89,27 @@ export default class Maps extends Component {
   // + Util.GOOGLE_API_KEY;
   addPolylinePoints = ({latitude, longitude}) => {
     //const mode = 'driving'; // 'walking';
-    let length = this.state.polylinePoints.length;
-    let points = this.state.polylinePoints;
+    let length = this.state.polylinePoints.length,
+        points = this.state.polylinePoints;
 
     if (length > 0) {
-
-      let origin = this.state.polylinePoints[length - 1].latitude + ',' + this.state.polylinePoints[length - 1].longitude;
-      let destination = `${latitude},${longitude}`;
-      const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${APIKEY}&mode=driving`;
-
-      fetch(url)
-      .then(response => response.json())
-      .then(json => {
-        if (json.status === "OK") {
-            let resPoints = this.decode(json.routes[0].overview_polyline.points);
-            this.setState({
-              polylinePoints: [
-                ...this.state.polylinePoints,
-                ...resPoints 
-              ]
-            })
-        } else {
-          this.addPolylinePoint(latitude, longitude);
-        }
+      this.getWayPoints(this.state.polylinePoints[length - 1], {latitude, longitude})
+      .then((resPoints) => {
+        this.setState({
+          polylinePoints: [
+            ...this.state.polylinePoints,
+            ...resPoints 
+          ]
+        })
+        this.addSegment(resPoints)
       })
-      .catch(e => {console.warn(e)})
+      .catch((res) => {
+        console.log(res)
+      })
 
     } else {
         this.addPolylinePoint(latitude, longitude);
+        this.addSegment([{latitude, longitude}]);
     }
   }
 
@@ -112,7 +130,80 @@ export default class Maps extends Component {
     this.addPolylinePoints(e.nativeEvent.coordinate)
   }
 
+  replaceSegment = (segment, index) => {
+    this.segments[index] = segment;
+  }
 
+  getTransormSegmentsData = () => {
+    let transformData = [];
+    this.segments.map((segment, index) => {
+      transformData = transformData.concat(segment)
+    })
+    
+    return transformData;
+  }
+
+  replaceRoute = () => {
+    this.setState({
+      polylinePoints: this.getTransormSegmentsData(),
+    })
+  }
+
+  updateRoute = async (e, index) => {
+    if (this.segments.length === 1) {
+      this.replaceSegment(e.nativeEvent.coordinate, 0);
+      this.setState({
+        polylinePoints: [e.nativeEvent.coordinate],
+      })
+
+      return;
+    } 
+
+    let segment ,
+        startPoint,
+        endPoint,
+        startPointNext,
+        endPointNext;
+
+    if (index === 0) {
+        this.replaceSegment(e.nativeEvent.coordinate, index);
+        ++index;
+        segment = this.segments[index]
+        startPoint = e.nativeEvent.coordinate;
+        endPoint = segment[segment.length - 1];
+    } else if (index === this.segments.length - 1) {
+        startPoint = this.segments[index][0];
+        endPoint = e.nativeEvent.coordinate;
+    } else {
+        segment = this.segments[index]
+        startPoint = segment[0];
+        endPoint = e.nativeEvent.coordinate;
+
+        startPointNext = e.nativeEvent.coordinate;
+        segment = this.segments[index + 1];
+        endPointNext = segment[segment.length - 1];
+    }
+
+    try {
+      if (!startPointNext && !endPointNext) {
+        let resPoints = await this.getWayPoints(startPoint, endPoint);
+        this.replaceSegment(resPoints, index)
+      } else {
+        let 
+            [resPointsPreviousSegment, 
+             resPointsNextSegment] = await Promise.all([this.getWayPoints(startPoint, endPoint), this.getWayPoints(startPointNext, endPointNext)]);
+
+        this.replaceSegment(resPointsPreviousSegment, index)
+        this.replaceSegment(resPointsNextSegment, index + 1)
+      }
+
+    } catch (e) {
+      console.log(e)
+    }
+
+    this.replaceRoute();
+
+  }
 
   onRegionChangeComplete(region) {
     console.log(region)
@@ -148,7 +239,14 @@ export default class Maps extends Component {
             ?
               this.state.markers.map((marker, index) => {
                 return (
-                  <Marker key={index} coordinate={marker} draggable>
+                  <Marker 
+                    key={index} 
+                    coordinate={marker} 
+                    draggable
+                    onDragStart={(e) => {
+                      console.log(index + 'marker drag start')
+                    }}
+                    onDragEnd={(e) => {this.updateRoute(e, index)}}>
                   </Marker>
                 )
               })
@@ -180,11 +278,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-  // handleNavigation = (la, lo) => {
-  //   const rla = 53.90428042342294;
-  //   const rlo = 27.56048619747162;
-  //   const url = `http://maps.apple.com/?saddr=${rla},${rlo}&daddr=${la},${lo}&dirflg=d`;
-  //   return Linking.openURL(url);
-  // }
-
