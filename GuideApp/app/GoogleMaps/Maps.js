@@ -126,8 +126,12 @@ export default class Maps extends Component {
   }
 
   handlePress(e) {
-    this.addMarkerPoint(e.nativeEvent.coordinate)
-    this.addPolylinePoints(e.nativeEvent.coordinate)
+    if (e.nativeEvent.coordinate) {
+      this.addMarkerPoint(e.nativeEvent.coordinate)
+      this.addPolylinePoints(e.nativeEvent.coordinate)
+    } else {
+      return;
+    }
   }
 
   replaceSegment = (segment, index) => {
