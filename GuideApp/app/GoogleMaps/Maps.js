@@ -58,14 +58,14 @@ export default class Maps extends Component {
         if (json.status === "OK") {
             resolve(this.decode(json.routes[0].overview_polyline.points));
         } else {
-          resolve(endPoint);
+            resolve(endPoint);
         }
       })
       .catch(e => {console.warn(e)})
     });  
   }
 
-  addPolylinePoint = (latitude, longitude) => {
+  addPolylinePoint = ({latitude, longitude}) => {
     this.setState({
       polylinePoints: [
         ...this.state.polylinePoints,
@@ -92,8 +92,8 @@ export default class Maps extends Component {
     let length = this.state.polylinePoints.length,
         points = this.state.polylinePoints;
 
-    if (length > 0) {
-      this.getWayPoints(this.state.polylinePoints[length - 1], {latitude, longitude})
+    if (this.segments.length > 0) {
+      this.getWayPoints(this.segments[this.segments.length - 1][this.segments[this.segments.length - 1].length - 1], {latitude, longitude})
       .then((resPoints) => {
         this.setState({
           polylinePoints: [
@@ -108,7 +108,7 @@ export default class Maps extends Component {
       })
 
     } else {
-        this.addPolylinePoint(latitude, longitude);
+        //this.addPolylinePoint({latitude, longitude});
         this.addSegment([{latitude, longitude}]);
     }
   }
@@ -123,15 +123,6 @@ export default class Maps extends Component {
         }
       ]
     })
-  }
-
-  handlePress(e) {
-    if (e.nativeEvent.coordinate) {
-      this.addMarkerPoint(e.nativeEvent.coordinate)
-      this.addPolylinePoints(e.nativeEvent.coordinate)
-    } else {
-      return;
-    }
   }
 
   replaceSegment = (segment, index) => {
@@ -172,33 +163,28 @@ export default class Maps extends Component {
     if (index === 0) {
         this.replaceSegment(e.nativeEvent.coordinate, index);
         ++index;
-        segment = this.segments[index]
         startPoint = e.nativeEvent.coordinate;
-        endPoint = segment[segment.length - 1];
-    } else if (index === this.segments.length - 1) {
+        endPoint = this.segments[index][this.segments[index].length - 1];
+    } else {
         startPoint = this.segments[index][0];
         endPoint = e.nativeEvent.coordinate;
-    } else {
-        segment = this.segments[index]
-        startPoint = segment[0];
-        endPoint = e.nativeEvent.coordinate;
 
-        startPointNext = e.nativeEvent.coordinate;
-        segment = this.segments[index + 1];
-        endPointNext = segment[segment.length - 1];
+        if (index < this.segments.length - 1) {
+          startPointNext = e.nativeEvent.coordinate;
+          endPointNext = this.segments[index + 1][this.segments[index + 1].length - 1];
+        }
     }
 
     try {
       if (!startPointNext && !endPointNext) {
-        let resPoints = await this.getWayPoints(startPoint, endPoint);
-        this.replaceSegment(resPoints, index)
+          let resPoints = await this.getWayPoints(startPoint, endPoint);
+          this.replaceSegment(resPoints, index)
       } else {
-        let 
-            [resPointsPreviousSegment, 
-             resPointsNextSegment] = await Promise.all([this.getWayPoints(startPoint, endPoint), this.getWayPoints(startPointNext, endPointNext)]);
+          let [resPointsPreviousSegment, 
+               resPointsNextSegment] = await Promise.all([this.getWayPoints(startPoint, endPoint), this.getWayPoints(startPointNext, endPointNext)]);
 
-        this.replaceSegment(resPointsPreviousSegment, index)
-        this.replaceSegment(resPointsNextSegment, index + 1)
+          this.replaceSegment(resPointsPreviousSegment, index)
+          this.replaceSegment(resPointsNextSegment, index + 1)
       }
 
     } catch (e) {
@@ -206,11 +192,19 @@ export default class Maps extends Component {
     }
 
     this.replaceRoute();
-
   }
 
   onRegionChangeComplete(region) {
     console.log(region)
+  }
+
+  handlePress(e) {
+    if (e.nativeEvent.coordinate) {
+        this.addMarkerPoint(e.nativeEvent.coordinate)
+        this.addPolylinePoints(e.nativeEvent.coordinate)
+    } else {
+        return;
+    }
   }
 
   render() {
@@ -247,10 +241,8 @@ export default class Maps extends Component {
                     key={index} 
                     coordinate={marker} 
                     draggable
-                    onDragStart={(e) => {
-                      console.log(index + 'marker drag start')
-                    }}
-                    onDragEnd={(e) => {this.updateRoute(e, index)}}>
+                    onDragStart={(e) => {}}
+                    onDragEnd={(e) => {this.updateRoute(e, index)}}>        
                   </Marker>
                 )
               })
