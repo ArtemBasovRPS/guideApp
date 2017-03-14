@@ -23,19 +23,42 @@ export default class Maps extends Component {
       points: null,
       markers: [],
       polylinePoints: [],
-      markers: [],
       region: {
         latitude: 53.90428042342294,
         longitude: 27.56048619747162,
         latitudeDelta: 0.06360365089180675,
         longitudeDelta: 0.06713971495628357,
       },
+      currentPosition: null,
     }
     this.map = null;
+    this.handlePress = this.handlePress.bind(this)
   }
 
+  //watchID: ?number = null;
+
   componentDidMount() {
-    //TODO
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        console.log(position)
+        this.setState({
+          currentPosition: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          }
+        });
+      },
+      (error) => alert(JSON.stringify(error)),
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+    );
+    // this.watchID = navigator.geolocation.watchPosition((position) => {
+    //   let lastPosition = JSON.stringify(position);
+    //   this.setState({lastPosition});
+    // });
+  }
+
+  componentWillUnmount() {
+    //navigator.geolocation.clearWatch(this.watchID);
   }
 
   getRandomInt(min, max) {
@@ -243,7 +266,7 @@ export default class Maps extends Component {
           ref={(ref) => { this.map = ref }}
           style={styles.map}
           region={this.state.region}
-          onPress={this.handlePress.bind(this)}
+          onPress={this.handlePress}
           onRegionChangeComplete={this.onRegionChangeComplete}
         >
           {this.state.polylinePoints.length > 0
@@ -272,6 +295,15 @@ export default class Maps extends Component {
             :
               null
           }
+          {this.state.currentPosition
+            ? 
+              <Marker
+                coordinate={this.state.currentPosition}>
+                <Ionicon name="ios-pin" style={styles.iconCurrentPosition}/>
+              </Marker>
+            :
+              null
+            }
         </MapView>
         <View style={styles.tabBarStyle}>
           <TouchableOpacity
@@ -348,5 +380,10 @@ const styles = StyleSheet.create({
   text: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  iconCurrentPosition: {
+    color: '#008fff',
+    fontSize: 36,
+    fontWeight: 'normal',
   },
 });
