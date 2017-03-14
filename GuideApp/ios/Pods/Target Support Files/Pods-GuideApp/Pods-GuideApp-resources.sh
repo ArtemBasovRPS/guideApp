@@ -78,6 +78,8 @@ EOM
 }
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_resource "GoogleMaps/Maps/Frameworks/GoogleMaps.framework/Versions/A/Resources/GoogleMaps.bundle"
+  install_resource "GooglePlacePicker/Frameworks/GooglePlacePicker.framework/Versions/A/Resources/GooglePlacePicker.bundle"
+  install_resource "GooglePlaces/Frameworks/GooglePlaces.framework/Versions/A/Resources/GooglePlaces.bundle"
   install_resource "../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"
   install_resource "../../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"
   install_resource "../../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"
@@ -91,6 +93,8 @@ if [[ "$CONFIGURATION" == "Debug" ]]; then
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_resource "GoogleMaps/Maps/Frameworks/GoogleMaps.framework/Versions/A/Resources/GoogleMaps.bundle"
+  install_resource "GooglePlacePicker/Frameworks/GooglePlacePicker.framework/Versions/A/Resources/GooglePlacePicker.bundle"
+  install_resource "GooglePlaces/Frameworks/GooglePlaces.framework/Versions/A/Resources/GooglePlaces.bundle"
   install_resource "../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"
   install_resource "../../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"
   install_resource "../../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"

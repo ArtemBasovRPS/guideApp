@@ -22,17 +22,6 @@ export default class App extends Component {
 
   NavigationBarRouteMapper = {
     LeftButton(route, navigator, index, navState) {
-      if (route.id === 'maps') {
-        return (
-          <TouchableOpacity
-            style={styles.navigationBarButton}
-            activeOpacity={1}
-            onPress={() => {console.log('press menu')}}>
-              <Ionicon name="md-menu" style={styles.iconMenu}/>
-          </TouchableOpacity>
-        )
-      }
-
       if(index > 0) {
         return (
           <TouchableOpacity
@@ -47,16 +36,6 @@ export default class App extends Component {
       return null;
     },
     RightButton(route, navigator, index, navState) {
-      if (route.id === 'maps') {
-        return (
-          <TouchableOpacity
-            style={styles.navigationBarButton}
-            activeOpacity={1}
-            onPress={() => {console.log('press search')}}>
-              <Ionicon name="ios-search" style={styles.iconMenu}/>
-          </TouchableOpacity>
-        )
-      }
       return null;
     },
     Title(route, navigator, index, navState) {
@@ -65,6 +44,10 @@ export default class App extends Component {
   };
 
   _renderContent = (category: string, title: ?string, component) => {
+    if (category === 'maps')
+      return <Maps/>;
+
+
     return (
       <Navigator
         configureScene={ this.configureScene }
@@ -123,7 +106,7 @@ export default class App extends Component {
             renderIcon={() => <Ionicon name="ios-globe-outline" style={styles.tabIcon}/>}
             renderSelectedIcon={() => <Ionicon name="md-globe" style={[styles.tabIcon, styles.tabIconSelect]}/>}
             onPress={() => this.setState({ selectedTab: 'maps' })}>
-              {this._renderContent("maps", "Maps", Maps)}
+              {this._renderContent("maps", "Maps")}
           </TabNavigator.Item>
         </TabNavigator>
       </View>

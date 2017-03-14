@@ -10,6 +10,8 @@ import {
 import MapView, {PROVIDER_GOOGLE, Marker, Polyline} from 'react-native-maps';
 import Ionicon from 'react-native-vector-icons/Ionicons';
 
+import RNGooglePlaces from 'react-native-google-places';
+
 const APIKEY = 'AIzaSyB9kkiGSu4UfmDXDYKdID1JapWMI8szbHw';
 
 export default class Maps extends Component {
@@ -22,6 +24,12 @@ export default class Maps extends Component {
       markers: [],
       polylinePoints: [],
       markers: [],
+      region: {
+        latitude: 53.90428042342294,
+        longitude: 27.56048619747162,
+        latitudeDelta: 0.06360365089180675,
+        longitudeDelta: 0.06713971495628357,
+      },
     }
     this.map = null;
   }
@@ -194,8 +202,10 @@ export default class Maps extends Component {
     this.replaceRoute();
   }
 
-  onRegionChangeComplete(region) {
-    console.log(region)
+  onRegionChangeComplete = (region) => {
+    this.setState({
+      region
+    })
   }
 
   handlePress(e) {
@@ -207,6 +217,24 @@ export default class Maps extends Component {
     }
   }
 
+  openSearchModal= () => {
+    RNGooglePlaces.openAutocompleteModal()
+    .then((place) => {
+        this.setState({
+          region: {
+            latitude: place.latitude,
+            longitude: place.longitude,
+            latitudeDelta: 0.06360365089180675,
+            longitudeDelta: 0.06713971495628357,
+          }
+        })
+        console.log(place);
+        // place represents user's selection from the
+        // suggestions and it is a simplified Google Place object.
+    })
+    .catch(error => console.log(error.message));  // error is a Javascript Error object
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -214,12 +242,7 @@ export default class Maps extends Component {
           provider={PROVIDER_GOOGLE}
           ref={(ref) => { this.map = ref }}
           style={styles.map}
-          initialRegion={{
-            latitude: 53.90428042342294,
-            longitude: 27.56048619747162,
-            latitudeDelta: 0.06360365089180675,
-            longitudeDelta: 0.06713971495628357,
-          }}
+          region={this.state.region}
           onPress={this.handlePress.bind(this)}
           onRegionChangeComplete={this.onRegionChangeComplete}
         >
@@ -250,6 +273,32 @@ export default class Maps extends Component {
               null
           }
         </MapView>
+        <View style={styles.tabBarStyle}>
+          <TouchableOpacity
+            style={styles.navigationBarButton}
+            activeOpacity={1}
+            onPress={() => {
+              //console.log('press menu')
+              RNGooglePlaces.openPlacePickerModal()
+              .then((place) => {
+                  console.log(place);
+                  // place represents user's selection from the
+                  // suggestions and it is a simplified Google Place object.
+              })
+              .catch(error => console.log(error.message));  // error is a Javascript Error object
+            }}>
+              <Ionicon name="md-menu" style={styles.iconMenu}/>
+          </TouchableOpacity>
+
+          <Text style={[styles.navigationBarText, styles.navigationBarTitle]}>Maps</Text>
+
+          <TouchableOpacity
+            style={styles.navigationBarButton}
+            activeOpacity={1}
+            onPress={() => {this.openSearchModal()}}>
+              <Ionicon name="ios-search" style={styles.iconMenu}/>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -258,10 +307,37 @@ export default class Maps extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 64,
   },
   map: {
     ...StyleSheet.absoluteFillObject,
+  },
+  tabBarStyle: {
+    height: 64,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#C7F1A1',
+  },
+  navigationBarTitle: {
+    fontSize: 23,
+    fontWeight: '600',
+    flex: 5,
+    textAlign: 'center',
+  },
+  navigationBarButton: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: 20,
+
+  },
+  navigationBarText: {
+    color: 'white',
+    marginTop: 12,
+  },
+  iconMenu: {
+    color: '#fff',
+    fontSize: 36,
+    fontWeight: 'normal',
   },
   marker: {
     backgroundColor: '#550bbc',
