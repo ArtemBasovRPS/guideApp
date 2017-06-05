@@ -12,19 +12,23 @@ import {
 import Ionicon from 'react-native-vector-icons/Ionicons';
 import TabNavigator from 'react-native-tab-navigator';
 
-import Default from './Default';
-import Maps from './GoogleMaps/Maps';
+import Default from './components/Default';
+import Profile from './components/Profile';
+import Login from './components/Login';
+import Maps from './components/GoogleMaps/Maps';
 
 export default class App extends Component {
   state = {
-    selectedTab: "home"
+    selectedTab: "maps"
   }
 
   NavigationBarRouteMapper = {
+
     LeftButton(route, navigator, index, navState) {
       if(index > 0) {
         return (
           <TouchableOpacity
+            activeOpacity={.85}
             onPress={() => componentNavigator.pop()}
             style={styles.navigationBarButton} >  
               <Ionicon 
@@ -45,8 +49,7 @@ export default class App extends Component {
 
   _renderContent = (category: string, title: ?string, component) => {
     if (category === 'maps')
-      return <Maps/>;
-
+      return <Maps category="maps"/>;
 
     return (
       <Navigator
@@ -80,25 +83,30 @@ export default class App extends Component {
   }
 
   render() {
+    let backgroundColor = this.state.selectedTab === 'login' ? '#2e2f43' : '#2e2f43';
+
     return (
       <View style={styles.container}>
         <TabNavigator
-          tabBarStyle={styles.tabBarStyle}>
+
+          
+          tabBarStyle={{ backgroundColor, overflow: 'hidden',  }}
+          sceneStyle={{ paddingBottom: 0, backgroundColor: 'transparent'}}>
           <TabNavigator.Item
             selected={this.state.selectedTab === 'profile'}
             title="Profile"
             renderIcon={() => <Ionicon name="ios-contact-outline" style={styles.tabIcon}/>}
             renderSelectedIcon={() => <Ionicon name="ios-contact" style={[styles.tabIcon, styles.tabIconSelect]}/>}
             onPress={() => this.setState({ selectedTab: 'profile' })}>
-              {this._renderContent("profile", "Profile", Default)}
+              {this._renderContent("login", "Login", Login)}
           </TabNavigator.Item>
           <TabNavigator.Item
             selected={this.state.selectedTab === 'home'}
-            title="Home"
-            renderIcon={() => <Ionicon name="ios-home-outline" style={styles.tabIcon}/>}
-            renderSelectedIcon={() => <Ionicon name="ios-home" style={[styles.tabIcon, styles.tabIconSelect]}/>}
+            title="Locality"
+            renderIcon={() => <Ionicon name="ios-pin-outline" style={styles.tabIcon}/>}
+            renderSelectedIcon={() => <Ionicon name="ios-pin" style={[styles.tabIcon, styles.tabIconSelect]}/>}
             onPress={() => this.setState({ selectedTab: 'home' })}>
-              {this._renderContent("home", "Home", Default)}
+              {this._renderContent("home", "Locality", Default)}
           </TabNavigator.Item>
           <TabNavigator.Item
             selected={this.state.selectedTab === 'maps'}
@@ -122,7 +130,10 @@ const styles = StyleSheet.create({
     flex: 1
   },
    navigationBar: {
-    backgroundColor: '#C7F1A1',
+    // backgroundColor: '#C7F1A1',
+    // backgroundColor: 'rgba(0,0,0,.7)',
+    // backgroundColor: '#2e2f43',
+    backgroundColor: '#35B79F',
   },
   navigationBarTitle: {
     fontSize: 23,
@@ -145,6 +156,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   tabBarStyle: {
+    // opacity: 0,
+    // height: 0,
     backgroundColor: "#C7F1A1"
   },
   tabIcon: {

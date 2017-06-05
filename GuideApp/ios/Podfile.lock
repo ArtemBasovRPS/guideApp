@@ -38,7 +38,7 @@ PODS:
     - React/Core
   - React/RCTWebSocket (0.42.0):
     - React/Core
-  - RNVectorIcons (4.0.0):
+  - RNVectorIcons (4.2.0):
     - React
   - Yoga (0.42.0.React)
 
@@ -73,7 +73,7 @@ SPEC CHECKSUMS:
   GooglePlacePicker: 345b1aabd42c9d6d9bf2369c1bae1234d903e764
   GooglePlaces: bca867d5e9da15384c794b945e4226848bc6e9d9
   React: 8ec97f0d79ba31892c526cf56425937926cc9b48
-  RNVectorIcons: d7e2c5eef986d1f594dfd2947df6d6e8093ad1e0
+  RNVectorIcons: 6d98d83e944d15014d8071dd9819beb094c61133
   Yoga: 4183cc70cae189d73f996b1e40c3078aca9f96ef
 
 PODFILE CHECKSUM: 2bd5be3485060b17b05a195be7d5c01cb7e13647
